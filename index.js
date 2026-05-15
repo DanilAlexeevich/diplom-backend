@@ -54,4 +54,26 @@ app.get("/products", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// Удаление товара
+app.delete("/products/:ref", async (req, res) => {
+  try {
+    const { ref } = req.params;
+
+    const result = await pool.query(
+      "DELETE FROM products WHERE ref = $1 RETURNING *",
+      [ref]
+    );
+
+    if (result.rowCount > 0) {
+      res.json({ success: true, message: "Товар удалён" });
+    } else {
+      res.status(404).json({ success: false, message: "Товар не найден" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
