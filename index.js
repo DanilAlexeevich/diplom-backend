@@ -30,15 +30,15 @@ app.get("/products", async (req, res) => {
 // Создание / обновление товара
 app.post("/products", async (req, res) => {
   try {
-    const { ref, name, price, status, category, description, image_url } = req.body;
+    const { ref, name, price, status, category, description } = req.body;
 
     if (!ref || !name) {
       return res.status(400).json({ error: "ref и name обязательны" });
     }
 
     const result = await pool.query(`
-      INSERT INTO products (ref, name, price, status, category, description, image_url)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO products (ref, name, price, status, category, description)
+      VALUES ($1, $2, $3, $4, $5, $6)
       ON CONFLICT (ref) 
       DO UPDATE SET 
         name = EXCLUDED.name,
@@ -46,10 +46,9 @@ app.post("/products", async (req, res) => {
         status = EXCLUDED.status,
         category = EXCLUDED.category,
         description = EXCLUDED.description,
-        image_url = EXCLUDED.image_url,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *;
-    `, [ref, name, price, status, category, description, image_url]);
+    `, [ref, name, price, status, category, description]);
 
     res.json({ 
       success: true, 
